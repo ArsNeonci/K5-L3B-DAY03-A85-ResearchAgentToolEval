@@ -71,9 +71,17 @@ Lấy từ `starter_v0/artifacts/version_log.csv` và `starter_v0/runs/*.json`. 
 
 Lấy từ `results[*].result.failures` trong run JSON.
 
+Run v0: [`runs/v0_B_base_openrouter_20261110T181418169230.json`](../../starter_v0/runs/v0_B_base_openrouter_20261110T181418169230.json) — `openai/gpt-4o-mini` qua OpenRouter, 13/20 PASS (`case_accuracy=0.65`, `tool_routing_accuracy=0.75`, `argument_accuracy=0.65`, `multiturn_accuracy=1.0`).
+
 | Case ID | Failure Type | Actual Tool Calls | What Failed | Fix |
 |---|---|---|---|---|
-|  |  |  |  |  |
+| R03_web_news_routing | wrong_tool (observed: wrong_arg_value) | `lookup(query="AI news", topic="news", timeframe="day")` | Đúng tool nhưng `query` bị nhét thêm chữ "news" ("AI news" thay vì "AI") | `tools.yaml`: mô tả `query` chỉ chứa chủ đề, ý "tin tức" thể hiện qua `topic=news` |
+| R08_out_of_scope | out_of_scope (observed: unexpected_tool_call) | `send(text="Nguyên hàm của x^2 là …")` | Câu hỏi toán ngoài phạm vi research nhưng agent lại gửi đáp án lên Telegram | Prompt: bỏ câu "cứ gửi luôn", thêm rule ngoài phạm vi thì trả lời/từ chối, không gọi tool |
+| R10_missing_handle | missing_info (observed: missing_tool_call) | `timeline(screenname="sama")` | Không nói tài khoản nào → agent tự đoán Sam Altman thay vì `clarify` | Prompt: bỏ câu "pick a well-known account like Sam Altman", thêm rule thiếu handle → `clarify` |
+| R11_missing_url | missing_info (observed: missing_tool_call) | `fetch(url="https://example.com/article")` | "bài viết này" không có URL → agent bịa URL | Prompt: bỏ câu "assume a likely URL", thiếu URL → `clarify` |
+| R12_confirm_before_send | wrong_boundary (observed: missing_tool_call) | `send(text="Bản tin này")` | Gửi Telegram ngay, không hỏi xác nhận | Prompt + `tools.yaml`: `send` chỉ gọi với `confirmed=true` sau khi user xác nhận nội dung; trước đó `clarify(response_type=yes_no)` |
+| R13_parallel_web_and_tweets | wrong_tool (observed: wrong_arg_value) | `lookup(query="AI news", timeframe="day")` + `social_search(query="AI")` | `lookup` thiếu `topic=news` và `query` dư "news" | Như R03, thêm rule "tin tức/hôm nay" → `topic=news`; prompt bỏ "single step" để cho phép gọi nhiều tool |
+| R14_out_of_scope_coding | out_of_scope (observed: unexpected_tool_call) | `send(text="Dưới đây là một hàm Python …")` | Yêu cầu viết code ngoài phạm vi nhưng agent gửi lên Telegram | Như R08 |
 
 ### B3. Team Eval Cases
 

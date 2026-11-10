@@ -23,4 +23,7 @@ def load_lab_env(root: Path) -> None:
     if external_path:
         load_dotenv(Path(external_path).expanduser())
         return
+    # Accept the repository-root .env as well as starter_v0/.env.
+    # The more specific starter file wins; explicit DAY03_ENV_FILE wins over both.
+    load_dotenv(root.parent / ".env")
     load_dotenv(root / ".env")

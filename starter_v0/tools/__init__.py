@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import secrets
+import hashlib
 from pathlib import Path
 from typing import Any
 
@@ -28,13 +28,13 @@ from .cancel_order.tool import cancelOrder
 
 
 def place_order_auto_request_id(preview_id: str = "", **extra) -> dict:
-    """Model-facing wrapper for place_order: the model only sends preview_id.
-
-    A new request_id is generated for every call, so the model never has to invent one.
-    The UI must NOT use this wrapper when the user approves: it calls placeOrder directly
-    with the request_id from pending_action.payload (see docs/TV1_INTEGRATION_NOTES.md).
-    """
-    return placeOrder(preview_id=preview_id, request_id="REQ-" + secrets.token_hex(8), **extra)
+    """One intent per preview: retries keep the same backend idempotency key."""
+    if extra:
+        question = "Trường không hỗ trợ: " + ", ".join(sorted(extra)) + ". Bạn đồng ý bỏ các trường này không?"
+        return {"tool": "place_order", "status": "error", "error": "unsupported_fields",
+                "unsupported_fields": sorted(extra), "message": question, "question": question, "awaiting_user": True}
+    request_id = "REQ-" + hashlib.sha256(str(preview_id).encode()).hexdigest()[:32]
+    return placeOrder(preview_id=preview_id, request_id=request_id)
 
 
 # NOTE (starter_v0): tool names here are intentionally vague. These keys are the

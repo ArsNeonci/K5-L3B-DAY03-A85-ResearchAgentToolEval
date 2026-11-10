@@ -1,5 +1,7 @@
 # Bàn giao TV2 — Chu Quang Linh
 
+> Bản bàn giao gốc được giữ để truy vết. **Cập nhật v7:** schema fragment đã đồng bộ registry (model chỉ gửi preview_id cho place_order); wrapper sinh request_id ổn định. Host session/approval/transcript đã tích hợp trong UI, console và eval. Toàn suite 155 passed +16 subtests, 0 skipped. Xem [FINAL_RUNBOOK.md](FINAL_RUNBOOK.md) và báo cáo nhóm cho trạng thái hiện tại thay cho các mục “chưa tích hợp” lịch sử bên dưới.
+
 Nhánh: `tv2-linh`. Căn cứ: phần trả lời mục 1–8 trong `docs/TV2_MAU_QUYET_DINH_TOOL.md`.
 
 ## Phạm vi đã làm

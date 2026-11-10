@@ -1,0 +1,5 @@
+# Reproduce the exact artifact bytes used by the final live runs on every OS.
+starter_v0/artifacts/system_prompt.md text eol=crlf
+starter_v0/artifacts/tools.yaml text eol=crlf
+# Historical snapshots are evidence; do not normalize their original line endings.
+starter_v0/artifacts/history/* -text whitespace=cr-at-eol

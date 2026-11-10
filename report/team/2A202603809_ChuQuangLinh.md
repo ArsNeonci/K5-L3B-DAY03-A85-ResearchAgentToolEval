@@ -1,5 +1,7 @@
 # Báo cáo cá nhân — Chu Quang Linh
 
+**Cập nhật bản cuối:** các số 122 passed/17 skipped bên dưới là kết quả giai đoạn trước. Đợt hoàn thiện 11/11/2026 đã đạt 155 passed +16 subtests, 0 skipped; live base 20/20 và group 10/10. Chi tiết thay đổi thiết kế G09 và giới hạn API nằm ở [báo cáo nhóm](group_report.md), [runbook](../../docs/FINAL_RUNBOOK.md) và [manifest](../../starter_v0/analysis/submission_evidence.json).
+
 ## 1. Thông tin thành viên
 
 - Họ tên: Chu Quang Linh.
@@ -122,3 +124,12 @@ Các giới hạn còn lại:
 - Bộ test chưa khẳng định mọi tình huống đồng thời hoặc vận hành production; chưa hoàn thành bonus test các tool cũ.
 
 Hướng cải thiện tiếp theo là kiểm tra UI phê duyệt từ đầu đến cuối, thống nhất giữ request_id theo từng ý định đặt hàng và bổ sung eval đo lỗi routing/arguments trên các tình huống do TV3 chọn. Không tự chấm điểm cá nhân hoặc khẳng định đã thực hiện kiểm thử thủ công chưa có bằng chứng.
+
+## 6. Bổ sung trong đợt hoàn thiện theo ủy quyền
+
+- Codex hỗ trợ sửa strict boolean ở send, wrapper request_id ổn định theo preview và trả error dict khi argument thừa.
+- Nối chat/console với SQLite session, phê duyệt qua host, lưu transcript có che khóa; có test UI/CLI/serialization thực tế.
+- Thay toàn bộ stub TODO bằng test offline có assertion; chạy 155 test và 16 subtest, không fail/skip.
+- Chạy provider thật: base v7 đạt 20/20; group cuối 10/10. Bản strict query trước đó 9/10 được giữ; G09 cuối chỉ chấm topic/timeframe đúng mục tiêu, không nhận thay đổi expectation là cải thiện model.
+- Ghi ba kịch bản UI bằng model thật với input script hóa; không coi đó là kiểm thử thủ công cá nhân hoặc Telegram gửi thật.
+- Hoàn thiện báo cáo nhóm/cá nhân theo bằng chứng, hướng dẫn một lệnh và CI. UI chỉ localhost theo quyết định người dùng; các API key Tavily/Firecrawl/RapidAPI vẫn cần bổ sung nếu dùng các nguồn đó.

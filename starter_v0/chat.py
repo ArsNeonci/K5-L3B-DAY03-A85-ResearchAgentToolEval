@@ -12,6 +12,8 @@ from providers import make_provider
 from providers.base import ToolCall
 from tools import TOOL_FUNCTIONS, load_tool_declarations, to_openai_tools
 from versioning import artifact_version_dict, build_artifact_version
+from runtime_support import atomic_json, redact
+from commerce_demo import demoSession, initializeDemoDatabase, issueConfirmation
 
 
 ROOT = Path(__file__).parent
@@ -53,7 +55,7 @@ def execute_tool_call(call: ToolCall) -> dict[str, Any]:
         result = func(**call.args)
     except Exception as exc:
         result = {"error": type(exc).__name__, "message": str(exc)}
-    return {"tool": call.name, "args": call.args, "result": result}
+    return redact({"tool": call.name, "args": call.args, "result": result})
 
 
 def tool_results_message(events: list[dict[str, Any]]) -> dict[str, str]:
@@ -145,8 +147,30 @@ def run_model_tool_loop(
 
 def write_transcript(path: Path, transcript: dict[str, Any]) -> None:
     transcript["updated_at"] = now_iso()
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(transcript, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
+    atomic_json(path, transcript)
+
+
+def approve_commerce_pending(result: dict) -> dict:
+    """Console host approval. Called inside the active demoSession."""
+    events=result.get('tool_events',[])
+    pending=next((e['result']['pending_action'] for e in events if isinstance(e.get('result'),dict) and e['result'].get('pending_action')),None)
+    if pending is None:return result
+    print(json_text(pending['payload']))
+    if input('Nhập YES để thực hiện đúng nội dung trên (khác = từ chối): ').strip()!='YES':
+        return {**result,'status':'rejected','assistant_text':'Đã từ chối; không thay đổi dữ liệu.'}
+    action,payload=pending['action'],pending['payload']
+    from tools.update_profile.tool import updateProfile
+    from tools.place_order.tool import placeOrder
+    from tools.cancel_order.tool import cancelOrder
+    functions={'update_profile':(updateProfile,('field','new_value')),
+               'place_order':(placeOrder,('preview_id','request_id')),
+               'cancel_order':(cancelOrder,('order_id',))}
+    function,fields=functions[action]
+    args={name:payload[name] for name in fields}
+    output=function(**args,confirmation_key=issueConfirmation(action,payload))
+    event={'tool':action,'args':args,'result':output,'source':'console_user_approval'}
+    return {**result,'status':'host_action','assistant_text':output.get('message') or json_text(output),
+            'tool_events':[*events,event]}
 
 
 def main() -> None:
@@ -193,6 +217,8 @@ def main() -> None:
     print("Type /exit to stop.")
 
     history: list[dict[str, str]] = []
+    database=ROOT/'runtime'/'console.sqlite3'
+    if not database.exists():initializeDemoDatabase(database)
     turn_index = 0
     while True:
         try:
@@ -224,18 +250,15 @@ def main() -> None:
         }
 
         try:
-            result = run_model_tool_loop(
-                provider=provider,
-                messages=messages,
-                tools=openai_tools,
-                model=args.model,
-                max_tool_rounds=args.max_tool_rounds,
-            )
+            with demoSession(database):
+                result = run_model_tool_loop(provider=provider,messages=messages,tools=openai_tools,
+                                             model=args.model,max_tool_rounds=args.max_tool_rounds)
+                result = approve_commerce_pending(result)
             turn_record.update(result)
             assistant_text = result["assistant_text"]
             print(f"\nAgent> {assistant_text}")
             history.append({"role": "user", "content": user_text})
-            history.append({"role": "assistant", "content": assistant_text})
+            history.append({"role": "assistant", "content": assistant_text+'\nTOOL_RESULTS_JSON:\n'+json_text(redact(result['tool_events']))})
         except Exception as exc:
             turn_record.update({
                 "status": "provider_error",

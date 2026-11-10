@@ -2,7 +2,7 @@
   "tools": [
     {
       "name": "get_my_profile",
-      "description": "Đọc tên hiển thị và địa chỉ giao hàng của tài khoản demo hiện tại. Dùng khi hỏi xem hồ sơ; không cập nhật và không đọc tài khoản khác.",
+      "description": "Read the display name and shipping address of the current demo account. Use when the user asks to see their profile or current address. Do NOT use to change the profile (use update_profile) or to read another account.\n",
       "parameters": {
         "type": "object",
         "properties": {},
@@ -12,7 +12,7 @@
     },
     {
       "name": "update_profile",
-      "description": "Đề nghị cập nhật display_name hoặc shipping_address của tài khoản demo hiện tại. Thiếu dữ liệu thì hỏi đủ trong một lượt; trường ngoài phạm vi phải hỏi trước khi bỏ. Chưa có phê duyệt bằng nút UI thì chỉ trả needs_confirmation; không dùng để xem hồ sơ hay sửa email/mật khẩu.",
+      "description": "Request a change to display_name or shipping_address of the current demo account. The tool does NOT write immediately: it returns needs_confirmation and the UI asks the user to approve. If the new value is missing, ask with clarify first. Only these two fields are supported — for email/password or other fields, tell the user it is not supported; do not call this tool. Do NOT use to view the profile (use get_my_profile).\n",
       "parameters": {
         "type": "object",
         "properties": {
@@ -21,12 +21,14 @@
             "enum": [
               "display_name",
               "shipping_address"
-            ]
+            ],
+            "description": "Which field to change."
           },
           "new_value": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 200
+            "maxLength": 200,
+            "description": "The exact new value the user gave. Never guess it."
           }
         },
         "required": [
@@ -38,24 +40,27 @@
     },
     {
       "name": "preview_order",
-      "description": "Tính và lưu bản xem trước đơn demo gồm sản phẩm, số lượng, địa chỉ, tổng VND và demo_cod; chưa tạo đơn/chưa thu tiền. Có thể bỏ shipping_address để dùng địa chỉ hồ sơ. Dùng trước place_order; không dùng để xem trạng thái đơn đã tạo.",
+      "description": "Calculate and save a demo order preview (product, quantity, address, total in VND, demo_cod). Does NOT create an order. Use when the user asks for a price or wants to order something — always preview before place_order. Do NOT use to check an existing order (use get_order_status).\n",
       "parameters": {
         "type": "object",
         "properties": {
           "product_id": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 80
+            "maxLength": 80,
+            "description": "Product code exactly as the user gave it, e.g. 'DEMO-NOTEBOOK'. If missing, ask with clarify."
           },
           "quantity": {
             "type": "integer",
             "minimum": 1,
-            "maximum": 10
+            "maximum": 10,
+            "description": "Number of items, integer 1-10."
           },
           "shipping_address": {
             "type": "string",
             "maxLength": 200,
-            "default": ""
+            "default": "",
+            "description": "Leave empty to use the profile address; only set if the user gives a different address."
           }
         },
         "required": [
@@ -67,38 +72,34 @@
     },
     {
       "name": "place_order",
-      "description": "Đề nghị tạo đơn SQLite demo từ preview_id còn hạn. request_id giữ nguyên khi retry cùng thao tác, đổi khi người dùng thật sự đặt đơn mới. Yêu cầu phê duyệt nút UI cho đúng bản xem trước và request_id; không thanh toán thật, không tự đoán sản phẩm hoặc giá.",
+      "description": "Request to create a demo order from a valid preview_id returned by preview_order. The tool does NOT write immediately: it returns needs_confirmation and the UI asks the user to approve. Do NOT call without a preview_id from a previous preview_order result; never invent products or prices. No real payment.\n",
       "parameters": {
         "type": "object",
         "properties": {
           "preview_id": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 80
-          },
-          "request_id": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 80
+            "maxLength": 80,
+            "description": "preview_id from the preview_order result."
           }
         },
         "required": [
-          "preview_id",
-          "request_id"
+          "preview_id"
         ],
         "additionalProperties": false
       }
     },
     {
       "name": "get_order_status",
-      "description": "Đọc thông tin và trạng thái đơn SQLite demo của tài khoản hiện tại theo order_id. Dùng khi hỏi đơn đang ở trạng thái nào; không tạo, sửa hoặc hủy đơn.",
+      "description": "Read the details and status of one demo order of the current account by order_id. Use when the user asks about an order's status. Do NOT use to create, change or cancel orders. If no order_id is given, ask with clarify.\n",
       "parameters": {
         "type": "object",
         "properties": {
           "order_id": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 80
+            "maxLength": 80,
+            "description": "Order id exactly as the user gave it, e.g. 'DEMO-...'."
           }
         },
         "required": [
@@ -109,14 +110,15 @@
     },
     {
       "name": "cancel_order",
-      "description": "Đề nghị hủy đơn SQLite demo pending của tài khoản hiện tại; cần phê duyệt nút UI đúng đơn. Không hủy đơn shipped hoặc đơn người khác. Retry đơn đã cancelled chỉ trả trạng thái cũ, không hoàn tồn kho hai lần.",
+      "description": "Request to cancel a pending demo order of the current account. The tool does NOT cancel immediately: it returns needs_confirmation and the UI asks the user to approve. Cannot cancel shipped orders or other users' orders. If no order_id is given, ask with clarify.\n",
       "parameters": {
         "type": "object",
         "properties": {
           "order_id": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 80
+            "maxLength": 80,
+            "description": "Order id to cancel, exactly as the user gave it."
           }
         },
         "required": [

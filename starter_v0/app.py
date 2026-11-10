@@ -20,6 +20,11 @@ from chat import (
 )
 from providers import make_provider
 from tools import load_tool_declarations, to_openai_tools
+from commerce_demo import demoSession
+from runtime_support import VERSION, redact, transcript_directory
+from versioning import artifact_version_dict, build_artifact_version
+from datetime import datetime, timezone
+import uuid
 
 
 PROMPT_PATH = ARTIFACTS_DIR / "system_prompt.md"
@@ -90,10 +95,14 @@ def render_user(text: str) -> None:
         st.markdown(redact_credentials(text))
 
 
-def run_ui_tool_loop(provider, model, messages, tools, events) -> tuple[str, str]:
+def run_ui_tool_loop(provider, model, messages, tools, events, rounds=None) -> tuple[str, str]:
+    rounds = rounds if rounds is not None else []
     for _ in range(MAX_TOOL_ROUNDS):
         response = provider.complete(messages, tools, model=model, temperature=0.0)
         calls = response.tool_calls
+        round_record = {"round": len(rounds) + 1, "assistant_text": response.text,
+                        "tool_calls": [{"name": c.name, "args": c.args} for c in calls], "tool_results": []}
+        rounds.append(round_record)
         if not calls:
             return "answered", response.text or ""
 
@@ -109,6 +118,7 @@ def run_ui_tool_loop(provider, model, messages, tools, events) -> tuple[str, str
             else:
                 event = execute_tool_call(call)
             events.append(event)
+            round_record["tool_results"].append(event)
             round_events.append(event)
             result = event["result"]
             if isinstance(result, dict) and result.get("awaiting_user"):
@@ -122,41 +132,60 @@ def run_ui_tool_loop(provider, model, messages, tools, events) -> tuple[str, str
 def run_turn(provider, model: str | None, declarations: list[dict], user_text: str) -> dict:
     user_message = {"role": "user", "content": user_text}
     events = []
+    rounds = []
+    started = datetime.now(timezone.utc).isoformat()
     try:
-        status, answer = run_ui_tool_loop(
-            provider=provider,
-            messages=[
-                {
-                    "role": "system",
-                    "content": f"{PROMPT_PATH.read_text(encoding='utf-8')}\n\n{UI_LANGUAGE_INSTRUCTION}",
-                },
-                *trim_history(st.session_state.history, HISTORY_WINDOW),
-                user_message,
-            ],
-            tools=to_openai_tools(declarations),
-            model=model,
-            events=events,
-        )
+        with demoSession(demo_database()):
+            status, answer = run_ui_tool_loop(
+                provider=provider,
+                messages=[
+                    {"role": "system", "content": f"{PROMPT_PATH.read_text(encoding='utf-8')}\n\n{UI_LANGUAGE_INSTRUCTION}"},
+                    *trim_history(st.session_state.history, HISTORY_WINDOW), user_message,
+                ],
+                tools=to_openai_tools(declarations), model=model, events=events, rounds=rounds,
+            )
     except Exception as exc:
         status_code = getattr(exc, "status_code", None)
         error = f"Không hoàn tất lượt chat ({type(exc).__name__})."
         if isinstance(status_code, int):
             error += f" HTTP {status_code}."
         error += " Kiểm tra provider và cấu hình trên máy chạy UI."
-        return {"user": user_text, "status": "provider_error", "assistant_text": error, "tool_events": events}
+        return {"user": user_text, "status": "provider_error", "assistant_text": error, "tool_events": events,
+                "started_at": started, "ended_at": datetime.now(timezone.utc).isoformat(), "rounds": rounds}
 
     assistant_text = redact_credentials(answer)
     st.session_state.history = trim_history([
         *st.session_state.history,
         user_message,
-        {"role": "assistant", "content": assistant_text},
+        {"role": "assistant", "content": assistant_text + ("\nTOOL_RESULTS_JSON:\n" + json_text(redact(events)) if events else "")},
     ], HISTORY_WINDOW)
+    for event in events:
+        if event.get("result", {}).get("pending_action"):
+            st.session_state.chat_pending_action = event
+            break
     return {
         "user": user_text,
         "status": status,
         "assistant_text": assistant_text,
         "tool_events": events,
+        "rounds": rounds, "started_at": started, "ended_at": datetime.now(timezone.utc).isoformat(),
     }
+
+
+def save_ui_turn(turn: dict, *, provider_name: str, model: str | None, evidence_kind: str = "live") -> None:
+    """Persist full events with artifact hashes, excluding confirmation capabilities."""
+    if "ui_transcript" not in st.session_state:
+        now = datetime.now(timezone.utc).isoformat()
+        transcript_id = f"{VERSION}_ui_{uuid.uuid4().hex}"
+        st.session_state.ui_transcript = {
+            "transcript_id": transcript_id,
+            **artifact_version_dict(build_artifact_version(VERSION, PROMPT_PATH, TOOLS_PATH)),
+            "provider": provider_name, "model": model, "evidence_kind": evidence_kind,
+            "source": "streamlit_ui", "created_at": now, "turns": [],
+        }
+    transcript = st.session_state.ui_transcript
+    transcript["turns"].append({"turn_index": len(transcript["turns"]) + 1, **redact(turn)})
+    chat.write_transcript(transcript_directory() / f"{transcript['transcript_id']}.transcript.json", transcript)
 
 
 def show_examples() -> None:
@@ -204,7 +233,11 @@ def run_action(action: str, arguments: dict, *, approved_payload: dict | None = 
     try:
         with demoSession(demo_database()):
             if approved_payload is None:
-                result = tools[action](**arguments)
+                if action == "place_order":
+                    from tools import place_order_auto_request_id
+                    result = place_order_auto_request_id(**arguments)
+                else:
+                    result = tools[action](**arguments)
             else:
                 key = issueConfirmation(action, approved_payload)
                 result = tools[action](**arguments, confirmation_key=key)
@@ -218,7 +251,7 @@ def run_action(action: str, arguments: dict, *, approved_payload: dict | None = 
         st.session_state.commerce_order = result["order"]["order_id"]
 
 
-def show_approval(event: dict) -> None:
+def show_approval(event: dict, *, origin: str = "commerce") -> None:
     pending = event["result"]["pending_action"]
     action, payload = pending["action"], pending["payload"]
     # Select only normalized invocation fields; the remaining payload describes
@@ -231,15 +264,39 @@ def show_approval(event: dict) -> None:
     st.warning("Xem nội dung bên dưới trước khi quyết định.")
     st.json(payload, expanded=True)
     approve, reject = st.columns(2)
-    if approve.button("Đồng ý thực hiện", type="primary"):
+    if approve.button("Đồng ý thực hiện", type="primary", key=f"approve_{origin}"):
         arguments = {field: payload[field] for field in fields[action]}
         run_action(action, arguments, approved_payload=payload)
+        if origin == "chat":
+            finish_chat_approval(st.session_state.commerce_event, accepted=True)
+        else:
+            save_ui_turn({"user": "[UI] Đồng ý thực hiện", "status": "host_action", "tool_events": [st.session_state.commerce_event]},
+                         provider_name="host", model=None, evidence_kind="host_ui_action")
         st.rerun()
-    if reject.button("Từ chối"):
+    if reject.button("Từ chối", key=f"reject_{origin}"):
         st.session_state.commerce_event = {
             **event, "result": {"status": "rejected", "message": "Bạn đã từ chối thao tác."},
         }
+        if origin == "chat":
+            finish_chat_approval(st.session_state.commerce_event, accepted=False)
+        else:
+            save_ui_turn({"user": "[UI] Từ chối", "status": "rejected", "tool_events": [st.session_state.commerce_event]},
+                         provider_name="host", model=None, evidence_kind="host_ui_action")
         st.rerun()
+
+
+def finish_chat_approval(event: dict, *, accepted: bool) -> None:
+    result = event["result"]
+    answer = result.get("message") or json_text(result)
+    turn = {"user": "[UI] Đồng ý thực hiện" if accepted else "[UI] Từ chối",
+            "status": "host_action" if accepted else "rejected", "assistant_text": answer, "tool_events": [event]}
+    st.session_state.turns.append(turn)
+    st.session_state.history.extend([
+        {"role": "user", "content": turn["user"]},
+        {"role": "assistant", "content": answer + "\nTOOL_RESULTS_JSON:\n" + json_text(result)},
+    ])
+    st.session_state.pop("chat_pending_action", None)
+    save_ui_turn(turn, provider_name=os.getenv("DAY03_PROVIDER", "openrouter"), model=os.getenv("DAY03_MODEL"))
 
 
 def render_commerce_demo() -> None:
@@ -280,12 +337,14 @@ def render_commerce_demo() -> None:
             arguments = {"product_id": product_id, "quantity": st.number_input("Số lượng", 1, 10, 1)}
         elif action == "place_order":
             preview_id = st.text_input("Mã bản xem trước", value=st.session_state.get("commerce_preview", ""), max_chars=80)
-            arguments = {"preview_id": preview_id, "request_id": preview_id}
+            arguments = {"preview_id": preview_id}
         elif action in {"get_order_status", "cancel_order"}:
             order_id = st.text_input("Mã đơn", value=st.session_state.get("commerce_order", ""), max_chars=80)
             arguments = {"order_id": order_id}
         if st.form_submit_button(labels[action]):
             run_action(action, arguments)
+            save_ui_turn({"user": f"[UI] {labels[action]}", "status": "host_action", "tool_events": [st.session_state.commerce_event]},
+                         provider_name="host", model=None, evidence_kind="host_ui_action")
             st.rerun()
 
 
@@ -323,7 +382,11 @@ def main() -> None:
         if st.button("＋ Chat mới", type="primary"):
             st.session_state.turns.clear()
             st.session_state.history.clear()
+            st.session_state.pop("chat_pending_action", None)
+            st.session_state.pop("ui_transcript", None)
         st.caption("Demo chặn gửi Telegram thật.")
+        if not os.getenv("OPENROUTER_API_KEY") and provider_name == "openrouter":
+            st.info("Chat AI cần OPENROUTER_API_KEY trên máy chủ. Khu vực Hồ sơ & đơn hàng vẫn dùng được không cần key.")
 
     example = st.session_state.pop("example_prompt", "")
     if not st.session_state.turns and not example:
@@ -332,6 +395,11 @@ def main() -> None:
         render_user(turn["user"])
         with st.chat_message("assistant"):
             render_answer(turn)
+
+    pending = st.session_state.get("chat_pending_action")
+    if pending:
+        show_approval(pending, origin="chat")
+        return
 
     waiting = st.session_state.turns and st.session_state.turns[-1]["status"] == "waiting_for_user"
     placeholder = "Nhập thông tin agent vừa hỏi…" if waiting else "Nhập câu hỏi nghiên cứu…"
@@ -342,6 +410,8 @@ def main() -> None:
             with st.spinner("Agent đang xử lý…"):
                 turn = run_turn(provider, model, declarations, user_text)
             st.session_state.turns.append(turn)
+            save_ui_turn(turn, provider_name=provider_name, model=model or getattr(provider, "default_model", None),
+                         evidence_kind="offline_test" if getattr(provider, "is_test_provider", False) else "live")
         st.rerun()
 
 

@@ -1,5 +1,7 @@
 # Ghi chú tích hợp TV1 — 6 tool SQLite demo của TV2 (Linh)
 
+> Tài liệu này ghi quyết định ở lần tích hợp ban đầu. **Bản cuối v7 đã thay đổi:** request_id ổn định theo preview thay vì ngẫu nhiên; argument thừa trả error dict; run_eval/chat/UI đều mở session; UI và console có phê duyệt và ghi transcript. Schema fragment đã đồng bộ model chỉ gửi preview_id. Khi chạy bản hiện tại, ưu tiên [FINAL_RUNBOOK.md](FINAL_RUNBOOK.md); không áp dụng lại wrapper ngẫu nhiên trong ví dụ lịch sử bên dưới.
+
 Nhánh: `tv1-integrate-tools` (tạo từ `main`, đã merge `tv2-linh`). Tài liệu gốc của TV2: [TV2_LINH_HANDOFF.md](TV2_LINH_HANDOFF.md).
 
 **Nguyên tắc:** không sửa code hay test của TV2 (`commerce_demo/`, `tools/<6 tool>/`, `tests/test_tv2_tools.py`). Mọi điều chỉnh nằm ở phía registry, tool declaration và prompt.

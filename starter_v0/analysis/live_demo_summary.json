@@ -1,0 +1,46 @@
+[
+  {
+    "scenario": "research_policy",
+    "transcript": "transcripts/v7-final_ui_79f56c6fb09d429db680bc7b536ba596.transcript.json",
+    "evidence_kind": "live",
+    "user_input_source": "scripted_AppTest_widgets_not_manual_user",
+    "turns": 1,
+    "statuses": [
+      "answered"
+    ],
+    "tools": [
+      "policy"
+    ]
+  },
+  {
+    "scenario": "clarify_then_profile",
+    "transcript": "transcripts/v7-final_ui_5a5af311500440d8bc5bf5bcd62bf088.transcript.json",
+    "evidence_kind": "live",
+    "user_input_source": "scripted_AppTest_widgets_not_manual_user",
+    "turns": 3,
+    "statuses": [
+      "answered",
+      "waiting_for_user",
+      "host_action"
+    ],
+    "tools": [
+      "update_profile",
+      "update_profile"
+    ]
+  },
+  {
+    "scenario": "send_confirmation",
+    "transcript": "transcripts/v7-final_ui_40ef006d5fc7466d9a09911a601b82e2.transcript.json",
+    "evidence_kind": "live",
+    "user_input_source": "scripted_AppTest_widgets_not_manual_user",
+    "turns": 2,
+    "statuses": [
+      "waiting_for_user",
+      "answered"
+    ],
+    "tools": [
+      "clarify",
+      "send"
+    ]
+  }
+]

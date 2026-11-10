@@ -1,5 +1,7 @@
 # Báo cáo cá nhân — Võ Hồng Lương
 
+**Bổ sung bản cuối:** phần v0–v3 và tích hợp ban đầu dưới đây là đóng góp lịch sử TV1. Đợt hoàn thiện theo ủy quyền dùng Codex đã sửa request_id ổn định, thêm session eval/chat và đạt 155 test passed, 0 skipped; base v7 20/20, group cuối 10/10. Không tính các sửa bổ sung thành thao tác TV1 tự thực hiện; xem [báo cáo nhóm](group_report.md) để phân biệt các giai đoạn.
+
 ## 1. Thông tin thành viên
 
 - Họ tên: Võ Hồng Lương
@@ -74,7 +76,7 @@
   - Dùng **Claude Code** (trợ lý AI trong VS Code) để: đọc toàn repo và lập checklist; đọc run JSON, tóm tắt case FAIL; soạn phần tích hợp (registry, wrapper, `tools.yaml`); viết tài liệu bàn giao.
   - Cách tự kiểm tra:
     - Mọi thay đổi do AI soạn đều được đề xuất trước, tôi đọc và duyệt rồi mới áp dụng.
-    - Chỉ dùng run có `provider_error_cases == 0` và `measured_cases == total_cases.
+    - Chỉ dùng run có `provider_error_cases == 0` và `measured_cases == total_cases`.
     - Chạy `pytest tests/test_tool_contract.py` sau mỗi lần sửa `tools.yaml`/registry và toàn suite `pytest` trước khi merge.
     - Kiểm tra diff trước khi commit/merge: không có `.env`, key, token, file SQLite.
 

@@ -1,0 +1,270 @@
+{
+  "dataset_id": "day03_v2_research_group",
+  "dataset_role": "group",
+  "description": "v4-integrated: 10 case, 5 single + 5 multi, route đủ 6 tool mới; SQLite fixtures do evaluation_runtime thiết lập. Bộ v3 gốc được giữ tại data/history/eval_group_v3.json.",
+  "cases": [
+    {
+      "id": "G01_policy_internal_routing",
+      "phase": "B",
+      "suite": "group",
+      "query": "Quy định trích dẫn nguồn tài liệu nghiên cứu của công ty chúng ta như thế nào?",
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "policy",
+            "args": {
+              "policy_area": "source_citation"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "routing_internal_policy",
+        "difficulty": "medium",
+        "what_it_tests": "Nhận diện câu hỏi về quy định nội bộ công ty -> Route vào tool policy thay vì tìm trên web."
+      }
+    },
+    {
+      "id": "LINH_S01_profile_read",
+      "phase": "B",
+      "suite": "group",
+      "query": "Cho tôi xem tên hiển thị và địa chỉ giao hàng hiện tại.",
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "get_my_profile",
+            "args": {}
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "new_tool_profile_read",
+        "difficulty": "easy",
+        "what_it_tests": "Yêu cầu chỉ đọc hồ sơ phải chọn get_my_profile, không gọi cập nhật hoặc tìm kiếm web."
+      }
+    },
+    {
+      "id": "LINH_S02_preview_quantity",
+      "phase": "B",
+      "suite": "group",
+      "failure_type": "wrong_arg_value",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "preview_order",
+            "args": {
+              "product_id": "DEMO-NOTEBOOK",
+              "quantity": 2
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "what_it_tests": "Xem trước 2 cuốn DEMO-NOTEBOOK, dùng địa chỉ hiện tại. Chưa đặt đơn.",
+        "dataset_version": "v4-integrated"
+      },
+      "query": "Xem trước 2 cuốn DEMO-NOTEBOOK, dùng địa chỉ hiện tại. Chưa đặt đơn."
+    },
+    {
+      "id": "LINH_S03_order_status",
+      "phase": "B",
+      "suite": "group",
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "get_order_status",
+            "args": {
+              "order_id": "DEMO-EVAL-ORDER"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "what_it_tests": "Xem trạng thái đơn DEMO-EVAL-ORDER của tôi, không hủy.",
+        "dataset_version": "v4-integrated"
+      },
+      "query": "Xem trạng thái đơn DEMO-EVAL-ORDER của tôi, không hủy."
+    },
+    {
+      "id": "LINH_S04_cancel_prepare",
+      "phase": "B",
+      "suite": "group",
+      "failure_type": "wrong_boundary",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "cancel_order",
+            "args": {
+              "order_id": "DEMO-EVAL-ORDER"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "what_it_tests": "Chuẩn bị hủy đơn DEMO-EVAL-ORDER để tôi kiểm tra rồi bấm xác nhận.",
+        "dataset_version": "v4-integrated"
+      },
+      "query": "Chuẩn bị hủy đơn DEMO-EVAL-ORDER để tôi kiểm tra rồi bấm xác nhận."
+    },
+    {
+      "id": "LINH_M01_fill_address",
+      "phase": "B",
+      "suite": "group",
+      "turns": [
+        {
+          "role": "user",
+          "content": "Đổi địa chỉ giao hàng của tôi."
+        },
+        {
+          "role": "user",
+          "content": "Sang Địa chỉ demo B. Chuẩn bị để tôi kiểm tra trước khi bấm xác nhận."
+        }
+      ],
+      "failure_type": "missing_info",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "update_profile",
+            "args": {
+              "field": "shipping_address",
+              "new_value": "Địa chỉ demo B"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "new_tool_multiturn_update",
+        "difficulty": "medium",
+        "what_it_tests": "Ghép yêu cầu đổi địa chỉ ở lượt trước với dữ liệu bổ sung ở lượt cuối; chuẩn bị cập nhật đúng field/value."
+      }
+    },
+    {
+      "id": "LINH_M02_place_prepare",
+      "phase": "B",
+      "suite": "group",
+      "failure_type": "wrong_boundary",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "place_order",
+            "args": {
+              "preview_id": "PREVIEW-EVAL-001"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "what_it_tests": "Giữ preview_id từ ngữ cảnh; wrapper cấp request_id; chỉ chuẩn bị, chưa tạo đơn khi thiếu phê duyệt.",
+        "dataset_version": "v4-integrated"
+      },
+      "turns": [
+        {
+          "role": "user",
+          "content": "Tôi vừa xem trước đơn PREVIEW-EVAL-001."
+        },
+        {
+          "role": "user",
+          "content": "Chuẩn bị đặt đúng đơn đó để tôi kiểm tra rồi bấm xác nhận."
+        }
+      ]
+    },
+    {
+      "id": "G07_multiturn_clarify_missing_paper_query",
+      "phase": "B",
+      "suite": "group",
+      "turns": [
+        {
+          "role": "user",
+          "content": "Tìm cho mình một vài bài báo khoa học mới trên arXiv"
+        },
+        {
+          "role": "user",
+          "content": "Tìm về chủ đề Diffusion Models nhé"
+        }
+      ],
+      "failure_type": "missing_info",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "papers",
+            "args": {
+              "query": "Diffusion Models"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "multiturn_papers_accumulation",
+        "difficulty": "medium",
+        "what_it_tests": "Turn 1 nói chung chung về arXiv, Turn 2 bổ sung từ khóa -> Gọi đúng tool papers với query tương ứng."
+      }
+    },
+    {
+      "id": "G09_multiturn_timeframe_correction",
+      "phase": "B",
+      "suite": "group",
+      "turns": [
+        {
+          "role": "user",
+          "content": "Tìm tin tức công nghệ xe điện Tesla trong tuần qua"
+        },
+        {
+          "role": "user",
+          "content": "Đổi lại cho mình xem tin trong cả năm nay nhé"
+        }
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "Tesla",
+              "topic": "news",
+              "timeframe": "year"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "multiturn_arg_override",
+        "difficulty": "medium",
+        "what_it_tests": "Sửa đổi tham số ở lượt sau: Cập nhật timeframe từ week thành year, giữ nguyên chủ đề news."
+      }
+    },
+    {
+      "id": "G10_multiturn_send_exact_content",
+      "phase": "B",
+      "suite": "group",
+      "failure_type": "wrong_boundary",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "send",
+            "args": {
+              "text": "Bản tin nghiên cứu demo A85.",
+              "confirmed": true
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "what_it_tests": "Xác nhận gắn với nội dung cụ thể. Eval đo routing và chặn gửi thật mặc định; không tính là bonus Telegram.",
+        "dataset_version": "v4-integrated"
+      },
+      "turns": [
+        {
+          "role": "user",
+          "content": "Tôi muốn gửi đúng nội dung sau lên Telegram: Bản tin nghiên cứu demo A85."
+        },
+        {
+          "role": "user",
+          "content": "Tôi đã xem nội dung \"Bản tin nghiên cứu demo A85.\" và xác nhận gửi nguyên văn."
+        }
+      ]
+    }
+  ]
+}

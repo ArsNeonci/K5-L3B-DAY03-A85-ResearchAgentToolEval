@@ -12,6 +12,8 @@ from env_loader import load_lab_env
 from providers import make_provider
 from tools import TOOL_FUNCTIONS, load_tool_declarations, to_openai_tools
 from versioning import artifact_version_dict, build_artifact_version
+from runtime_support import atomic_json
+from evaluation_runtime import evaluation_runtime
 
 
 ROOT = Path(__file__).parent
@@ -270,6 +272,7 @@ def main() -> None:
     parser.add_argument("--tools", type=Path, default=ARTIFACTS_DIR / "tools.yaml")
     parser.add_argument("--eval-cases", type=Path, default=DATA_DIR / "eval_base.json")
     parser.add_argument("--runs-dir", type=Path, default=ROOT / "runs")
+    parser.add_argument("--allow-actions", action="store_true", help="Opt in to real external action tools during eval. Default blocks Telegram.")
     args = parser.parse_args()
 
     system_prompt = args.system_prompt.read_text(encoding="utf-8")
@@ -285,7 +288,30 @@ def main() -> None:
     validate_expected_tools(cases, tool_declarations, args.eval_cases)
     openai_tools = to_openai_tools(tool_declarations)
 
-    results: list[dict[str, Any]] = []
+    with evaluation_runtime(allow_actions=args.allow_actions) as execution_policy:
+        results = evaluate_live_cases(cases, provider, system_prompt, openai_tools, args)
+
+    summary = summarize(results)
+    args.runs_dir.mkdir(parents=True, exist_ok=True)
+    now = datetime.now()
+    generated_at = now.isoformat(timespec="seconds")
+    timestamp = now.strftime("%Y%m%dT%H%M%S%f")
+    run_id = "_".join([safe_slug(args.version), safe_slug(args.phase), safe_slug(args.suite), safe_slug(args.provider), timestamp])
+    payload = {
+        "run_id": run_id, "version": args.version, **artifact_version_dict(artifact_version),
+        "phase": args.phase, "suite": args.suite, "provider": args.provider, "model": selected_model,
+        "system_prompt": str(args.system_prompt), "tools": str(args.tools), "eval_cases": str(args.eval_cases),
+        **dataset_info, "generated_at": generated_at, "execution_policy": execution_policy,
+        "summary": summary, "results": results,
+    }
+    out_path = args.runs_dir / f"{run_id}.json"
+    atomic_json(out_path, payload)
+    print_table(results, summary)
+    print(f"\nArtifact version: {artifact_version.artifact_version}\nSaved: {out_path}")
+
+
+def evaluate_live_cases(cases, provider, system_prompt, openai_tools, args):
+    results = []
     for case in cases:
         print(f"Running {case['id']}...", flush=True)
         agent = ResearchAgent(provider, system_prompt=system_prompt, tools=openai_tools, model=args.model)
@@ -322,40 +348,7 @@ def main() -> None:
             "tool_results": tool_results,
         })
 
-    summary = summarize(results)
-    args.runs_dir.mkdir(parents=True, exist_ok=True)
-    now = datetime.now()
-    generated_at = now.isoformat(timespec="seconds")
-    timestamp = now.strftime("%Y%m%dT%H%M%S%f")
-    run_id = "_".join([
-        safe_slug(args.version),
-        safe_slug(args.phase),
-        safe_slug(args.suite),
-        safe_slug(args.provider),
-        timestamp,
-    ])
-    payload = {
-        "run_id": run_id,
-        "version": args.version,
-        **artifact_version_dict(artifact_version),
-        "phase": args.phase,
-        "suite": args.suite,
-        "provider": args.provider,
-        "model": selected_model,
-        "system_prompt": str(args.system_prompt),
-        "tools": str(args.tools),
-        "eval_cases": str(args.eval_cases),
-        **dataset_info,
-        "generated_at": generated_at,
-        "summary": summary,
-        "results": results,
-    }
-
-    out_path = args.runs_dir / f"{run_id}.json"
-    out_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
-    print_table(results, summary)
-    print(f"\nArtifact version: {artifact_version.artifact_version}")
-    print(f"\nSaved: {out_path}")
+    return results
 
 
 if __name__ == "__main__":

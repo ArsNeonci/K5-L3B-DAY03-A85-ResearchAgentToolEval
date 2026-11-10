@@ -1,5 +1,7 @@
 # Day 03 Lab v2 — Research Agent Tool Eval
 
+> **Bản hoàn thiện A85:** hướng dẫn chạy một lệnh và bằng chứng cuối ở [docs/FINAL_RUNBOOK.md](docs/FINAL_RUNBOOK.md). UI trên máy hiện tại: http://127.0.0.1:8502 (chỉ localhost theo lựa chọn người dùng). Kiểm tra offline: `cd starter_v0` rồi `python scripts/final_check.py`; thêm `--live` để chạy provider/eval thật.
+
 Trong lab này, nhóm build một research agent nhỏ nhưng chạy thật. Agent nhận request của user, chọn tool, truyền arguments, chạy tool thật, lưu full JSON log, rồi dùng log đó để tối ưu prompt/tool declaration qua nhiều version.
 
 **Loại bài:** Nhóm · **Thời lượng:** khoảng 4 giờ tại lớp · **Deadline:** 23h59 ngày lab (GMT+7), coach có thể gia hạn tối đa 48h

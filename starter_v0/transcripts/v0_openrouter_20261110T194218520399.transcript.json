@@ -1,0 +1,257 @@
+{
+  "transcript_id": "v0_openrouter_20261110T194218520399",
+  "version": "v0",
+  "artifact_version": "v0+pf0c107a9d7a1+t41a2894f8ad1",
+  "prompt_hash": "f0c107a9d7a14032c948d642d7c36f2a85cb6d69a099530093a874c94d472446",
+  "tools_hash": "41a2894f8ad1b5f1af946a1ebd34dc809faa05f187393d1fb770540a67c9074a",
+  "provider": "openrouter",
+  "model": "openai/gpt-4o-mini",
+  "system_prompt": "artifacts/system_prompt.md",
+  "tools": "artifacts/tools.yaml",
+  "history_window": 5,
+  "max_tool_rounds": 4,
+  "created_at": "2026-11-10T19:42:18",
+  "updated_at": "2026-11-10T19:42:28",
+  "turns": [
+    {
+      "turn_index": 1,
+      "started_at": "2026-11-10T19:42:18",
+      "user": "Tìm 2 bài trên arXiv về đánh giá agent gọi tool. Tóm tắt mỗi bài một câu và kèm link.",
+      "status": "answered",
+      "assistant_text": "Here are two recent papers on agent tool evaluation:\n\n- This paper studies over-privileged tool selection in LLM agents, introducing ToolPrivBench to evaluate whether agents choose higher-privilege tools despite sufficient lower-privilege alternatives. - [Read more](http://arxiv.org/abs/2606.20023v2)\n  \n- The Evaluation Agent framework mimics human-like strategies for efficient evaluations of visual generative models, reducing evaluation time to 10% of traditional methods while providing detailed analyses. - [Read more](http://arxiv.org/abs/2412.09645v3)",
+      "rounds": [
+        {
+          "round": 1,
+          "assistant_text": null,
+          "tool_calls": [
+            {
+              "name": "papers",
+              "args": {
+                "query": "agent tool evaluation",
+                "max_results": 2
+              }
+            }
+          ],
+          "tool_results": [
+            {
+              "tool": "papers",
+              "args": {
+                "query": "agent tool evaluation",
+                "max_results": 2
+              },
+              "result": {
+                "tool": "arxiv_search",
+                "query": "agent tool evaluation",
+                "api_query": "all:agent AND all:tool AND all:evaluation",
+                "total_results": 5364,
+                "items": [
+                  {
+                    "arxiv_id": "2606.20023v2",
+                    "title": "When Lower Privileges Suffice: Investigating Over-Privileged Tool Selection in LLM Agents",
+                    "summary": "As LLM agents increasingly select tools autonomously, their choices among tools with different privileges become safety-relevant. However, prior tool-selection studies focus on safety-agnostic metadata preferences, leaving privilege-sensitive choices underexplored. To address this gap, we study over-privileged tool selection, in which an agent selects or escalates to a higher-privilege tool despite a sufficient lower-privilege alternative. We introduce ToolPrivBench to evaluate whether agents choose higher-privilege tools despite sufficient lower-privilege alternatives, measuring both initial selection and escalation after transient tool failures. Across eight domains and five recurring risk patterns, we find that over-privileged tool selection is common among mainstream LLM agents and is further amplified by transient failures. We further find that general safety alignment does not reliably transfer to least-privilege tool choice, while prompt-level controls provide only limited mitigation under transient failures. We therefore introduce a privilege-aware post-training defense that teaches agents to prefer sufficient lower-privilege tools and escalate only when necessary. Our mitigation experiments show that this defense substantially reduces unnecessary high-privilege tool use while preserving general capabilities.",
+                    "authors": [
+                      "Kaiyue Yang",
+                      "Yuyan Bu",
+                      "Jingwei Yi",
+                      "Yuchi Wang",
+                      "Biyu Zhou",
+                      "Juntao Dai",
+                      "Songlin Hu",
+                      "Yaodong Yang"
+                    ],
+                    "published": "2026-06-18T09:54:48Z",
+                    "updated": "2026-07-07T12:24:40Z",
+                    "url": "http://arxiv.org/abs/2606.20023v2",
+                    "pdf_url": "https://arxiv.org/pdf/2606.20023v2",
+                    "source": "arxiv.org",
+                    "primary_category": "cs.SE",
+                    "categories": [
+                      "cs.SE",
+                      "cs.AI",
+                      "cs.CL"
+                    ]
+                  },
+                  {
+                    "arxiv_id": "2412.09645v3",
+                    "title": "Evaluation Agent: Efficient and Promptable Evaluation Framework for Visual Generative Models",
+                    "summary": "Recent advancements in visual generative models have enabled high-quality image and video generation, opening diverse applications. However, evaluating these models often demands sampling hundreds or thousands of images or videos, making the process computationally expensive, especially for diffusion-based models with inherently slow sampling. Moreover, existing evaluation methods rely on rigid pipelines that overlook specific user needs and provide numerical results without clear explanations. In contrast, humans can quickly form impressions of a model's capabilities by observing only a few samples. To mimic this, we propose the Evaluation Agent framework, which employs human-like strategies for efficient, dynamic, multi-round evaluations using only a few samples per round, while offering detailed, user-tailored analyses. It offers four key advantages: 1) efficiency, 2) promptable evaluation tailored to diverse user needs, 3) explainability beyond single numerical scores, and 4) scalability across various models and tools. Experiments show that Evaluation Agent reduces evaluation time to 10% of traditional methods while delivering comparable results. The Evaluation Agent framework is fully open-sourced to advance research in visual generative models and their efficient evaluation.",
+                    "authors": [
+                      "Fan Zhang",
+                      "Shulin Tian",
+                      "Ziqi Huang",
+                      "Yu Qiao",
+                      "Ziwei Liu"
+                    ],
+                    "published": "2024-12-10T18:52:39Z",
+                    "updated": "2025-08-20T18:39:27Z",
+                    "url": "http://arxiv.org/abs/2412.09645v3",
+                    "pdf_url": "https://arxiv.org/pdf/2412.09645v3",
+                    "source": "arxiv.org",
+                    "primary_category": "cs.CV",
+                    "categories": [
+                      "cs.CV",
+                      "cs.AI",
+                      "cs.CL"
+                    ]
+                  }
+                ],
+                "rate_limit_note": "arXiv may return 429 if called too frequently; this tool waits at least 3 seconds between requests in-process."
+              }
+            }
+          ]
+        },
+        {
+          "round": 2,
+          "assistant_text": null,
+          "tool_calls": [
+            {
+              "name": "format",
+              "args": {
+                "items": [
+                  {
+                    "title": "When Lower Privileges Suffice: Investigating Over-Privileged Tool Selection in LLM Agents",
+                    "url": "http://arxiv.org/abs/2606.20023v2",
+                    "summary": "This paper studies over-privileged tool selection in LLM agents, introducing ToolPrivBench to evaluate whether agents choose higher-privilege tools despite sufficient lower-privilege alternatives."
+                  },
+                  {
+                    "title": "Evaluation Agent: Efficient and Promptable Evaluation Framework for Visual Generative Models",
+                    "url": "http://arxiv.org/abs/2412.09645v3",
+                    "summary": "The Evaluation Agent framework mimics human-like strategies for efficient evaluations of visual generative models, reducing evaluation time to 10% of traditional methods while providing detailed analyses."
+                  }
+                ],
+                "template": "bullets",
+                "headline": "Recent Papers on Agent Tool Evaluation"
+              }
+            }
+          ],
+          "tool_results": [
+            {
+              "tool": "format",
+              "args": {
+                "items": [
+                  {
+                    "title": "When Lower Privileges Suffice: Investigating Over-Privileged Tool Selection in LLM Agents",
+                    "url": "http://arxiv.org/abs/2606.20023v2",
+                    "summary": "This paper studies over-privileged tool selection in LLM agents, introducing ToolPrivBench to evaluate whether agents choose higher-privilege tools despite sufficient lower-privilege alternatives."
+                  },
+                  {
+                    "title": "Evaluation Agent: Efficient and Promptable Evaluation Framework for Visual Generative Models",
+                    "url": "http://arxiv.org/abs/2412.09645v3",
+                    "summary": "The Evaluation Agent framework mimics human-like strategies for efficient evaluations of visual generative models, reducing evaluation time to 10% of traditional methods while providing detailed analyses."
+                  }
+                ],
+                "template": "bullets",
+                "headline": "Recent Papers on Agent Tool Evaluation"
+              },
+              "result": {
+                "tool": "render_digest",
+                "template": "bullets",
+                "markdown": "- This paper studies over-privileged tool selection in LLM agents, introducing ToolPrivBench to evaluate whether agents choose higher-privilege tools despite sufficient lower-privilege alternatives. - [arxiv.org](http://arxiv.org/abs/2606.20023v2)\n- The Evaluation Agent framework mimics human-like strategies for efficient evaluations of visual generative models, reducing evaluation time to 10% of traditional methods while providing detailed analyses. - [arxiv.org](http://arxiv.org/abs/2412.09645v3)",
+                "item_count": 2
+              }
+            }
+          ]
+        },
+        {
+          "round": 3,
+          "assistant_text": "Here are two recent papers on agent tool evaluation:\n\n- This paper studies over-privileged tool selection in LLM agents, introducing ToolPrivBench to evaluate whether agents choose higher-privilege tools despite sufficient lower-privilege alternatives. - [Read more](http://arxiv.org/abs/2606.20023v2)\n  \n- The Evaluation Agent framework mimics human-like strategies for efficient evaluations of visual generative models, reducing evaluation time to 10% of traditional methods while providing detailed analyses. - [Read more](http://arxiv.org/abs/2412.09645v3)",
+          "tool_calls": [],
+          "tool_results": []
+        }
+      ],
+      "tool_events": [
+        {
+          "tool": "papers",
+          "args": {
+            "query": "agent tool evaluation",
+            "max_results": 2
+          },
+          "result": {
+            "tool": "arxiv_search",
+            "query": "agent tool evaluation",
+            "api_query": "all:agent AND all:tool AND all:evaluation",
+            "total_results": 5364,
+            "items": [
+              {
+                "arxiv_id": "2606.20023v2",
+                "title": "When Lower Privileges Suffice: Investigating Over-Privileged Tool Selection in LLM Agents",
+                "summary": "As LLM agents increasingly select tools autonomously, their choices among tools with different privileges become safety-relevant. However, prior tool-selection studies focus on safety-agnostic metadata preferences, leaving privilege-sensitive choices underexplored. To address this gap, we study over-privileged tool selection, in which an agent selects or escalates to a higher-privilege tool despite a sufficient lower-privilege alternative. We introduce ToolPrivBench to evaluate whether agents choose higher-privilege tools despite sufficient lower-privilege alternatives, measuring both initial selection and escalation after transient tool failures. Across eight domains and five recurring risk patterns, we find that over-privileged tool selection is common among mainstream LLM agents and is further amplified by transient failures. We further find that general safety alignment does not reliably transfer to least-privilege tool choice, while prompt-level controls provide only limited mitigation under transient failures. We therefore introduce a privilege-aware post-training defense that teaches agents to prefer sufficient lower-privilege tools and escalate only when necessary. Our mitigation experiments show that this defense substantially reduces unnecessary high-privilege tool use while preserving general capabilities.",
+                "authors": [
+                  "Kaiyue Yang",
+                  "Yuyan Bu",
+                  "Jingwei Yi",
+                  "Yuchi Wang",
+                  "Biyu Zhou",
+                  "Juntao Dai",
+                  "Songlin Hu",
+                  "Yaodong Yang"
+                ],
+                "published": "2026-06-18T09:54:48Z",
+                "updated": "2026-07-07T12:24:40Z",
+                "url": "http://arxiv.org/abs/2606.20023v2",
+                "pdf_url": "https://arxiv.org/pdf/2606.20023v2",
+                "source": "arxiv.org",
+                "primary_category": "cs.SE",
+                "categories": [
+                  "cs.SE",
+                  "cs.AI",
+                  "cs.CL"
+                ]
+              },
+              {
+                "arxiv_id": "2412.09645v3",
+                "title": "Evaluation Agent: Efficient and Promptable Evaluation Framework for Visual Generative Models",
+                "summary": "Recent advancements in visual generative models have enabled high-quality image and video generation, opening diverse applications. However, evaluating these models often demands sampling hundreds or thousands of images or videos, making the process computationally expensive, especially for diffusion-based models with inherently slow sampling. Moreover, existing evaluation methods rely on rigid pipelines that overlook specific user needs and provide numerical results without clear explanations. In contrast, humans can quickly form impressions of a model's capabilities by observing only a few samples. To mimic this, we propose the Evaluation Agent framework, which employs human-like strategies for efficient, dynamic, multi-round evaluations using only a few samples per round, while offering detailed, user-tailored analyses. It offers four key advantages: 1) efficiency, 2) promptable evaluation tailored to diverse user needs, 3) explainability beyond single numerical scores, and 4) scalability across various models and tools. Experiments show that Evaluation Agent reduces evaluation time to 10% of traditional methods while delivering comparable results. The Evaluation Agent framework is fully open-sourced to advance research in visual generative models and their efficient evaluation.",
+                "authors": [
+                  "Fan Zhang",
+                  "Shulin Tian",
+                  "Ziqi Huang",
+                  "Yu Qiao",
+                  "Ziwei Liu"
+                ],
+                "published": "2024-12-10T18:52:39Z",
+                "updated": "2025-08-20T18:39:27Z",
+                "url": "http://arxiv.org/abs/2412.09645v3",
+                "pdf_url": "https://arxiv.org/pdf/2412.09645v3",
+                "source": "arxiv.org",
+                "primary_category": "cs.CV",
+                "categories": [
+                  "cs.CV",
+                  "cs.AI",
+                  "cs.CL"
+                ]
+              }
+            ],
+            "rate_limit_note": "arXiv may return 429 if called too frequently; this tool waits at least 3 seconds between requests in-process."
+          }
+        },
+        {
+          "tool": "format",
+          "args": {
+            "items": [
+              {
+                "title": "When Lower Privileges Suffice: Investigating Over-Privileged Tool Selection in LLM Agents",
+                "url": "http://arxiv.org/abs/2606.20023v2",
+                "summary": "This paper studies over-privileged tool selection in LLM agents, introducing ToolPrivBench to evaluate whether agents choose higher-privilege tools despite sufficient lower-privilege alternatives."
+              },
+              {
+                "title": "Evaluation Agent: Efficient and Promptable Evaluation Framework for Visual Generative Models",
+                "url": "http://arxiv.org/abs/2412.09645v3",
+                "summary": "The Evaluation Agent framework mimics human-like strategies for efficient evaluations of visual generative models, reducing evaluation time to 10% of traditional methods while providing detailed analyses."
+              }
+            ],
+            "template": "bullets",
+            "headline": "Recent Papers on Agent Tool Evaluation"
+          },
+          "result": {
+            "tool": "render_digest",
+            "template": "bullets",
+            "markdown": "- This paper studies over-privileged tool selection in LLM agents, introducing ToolPrivBench to evaluate whether agents choose higher-privilege tools despite sufficient lower-privilege alternatives. - [arxiv.org](http://arxiv.org/abs/2606.20023v2)\n- The Evaluation Agent framework mimics human-like strategies for efficient evaluations of visual generative models, reducing evaluation time to 10% of traditional methods while providing detailed analyses. - [arxiv.org](http://arxiv.org/abs/2412.09645v3)",
+            "item_count": 2
+          }
+        }
+      ],
+      "ended_at": "2026-11-10T19:42:28"
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+# SQLite demo state is local-only. Keep only this ignore file.
+*
+!.gitignore

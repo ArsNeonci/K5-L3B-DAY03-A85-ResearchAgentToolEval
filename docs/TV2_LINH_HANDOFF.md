@@ -32,7 +32,7 @@ python scripts/demo_tv2_tools.py
 - Console demo đi qua cả 6 tool; nhập `YES` tại từng lần hỏi để tự kiểm tra hành vi ghi. Nhập khác thì dừng. Không có đơn hàng hay thanh toán ngoài đời.
 - File test dùng `unittest` của Python chuẩn, cũng có thể được pytest thu thập khi nhóm chạy suite sau này. Tách riêng `tests/test_tv2_tools.py` để không sửa stub test chung của thành viên khác.
 - SQLite demo tạm nằm trong `starter_v0/runtime/`, bị Git ignore và được dọn khi kết thúc. Không commit database hoặc khóa xác nhận.
-- Kết quả kiểm tra ghi trong `report/team/TV2_LINH_TOOL_TESTS.md`. Chưa chạy full pytest, eval nhóm/base, model hoặc UI chung.
+- Kết quả kiểm tra ghi trong `report/team/TV2_LINH_TOOL_TESTS.md`. Đã bổ sung kiểm tra TV2-12 trên bản tích hợp `c04f5da`: contract 85 passed; full pytest 122 passed, 17 skipped, 0 failed. Chưa chạy eval nhóm/base, model hoặc UI chung trong đợt kiểm tra này.
 
 ## TV1 cần tích hợp registry và tool declaration
 

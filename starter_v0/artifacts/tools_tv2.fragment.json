@@ -1,0 +1,129 @@
+{
+  "tools": [
+    {
+      "name": "get_my_profile",
+      "description": "Đọc tên hiển thị và địa chỉ giao hàng của tài khoản demo hiện tại. Dùng khi hỏi xem hồ sơ; không cập nhật và không đọc tài khoản khác.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "update_profile",
+      "description": "Đề nghị cập nhật display_name hoặc shipping_address của tài khoản demo hiện tại. Thiếu dữ liệu thì hỏi đủ trong một lượt; trường ngoài phạm vi phải hỏi trước khi bỏ. Chưa có phê duyệt bằng nút UI thì chỉ trả needs_confirmation; không dùng để xem hồ sơ hay sửa email/mật khẩu.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string",
+            "enum": [
+              "display_name",
+              "shipping_address"
+            ]
+          },
+          "new_value": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "field",
+          "new_value"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "preview_order",
+      "description": "Tính và lưu bản xem trước đơn demo gồm sản phẩm, số lượng, địa chỉ, tổng VND và demo_cod; chưa tạo đơn/chưa thu tiền. Có thể bỏ shipping_address để dùng địa chỉ hồ sơ. Dùng trước place_order; không dùng để xem trạng thái đơn đã tạo.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "shipping_address": {
+            "type": "string",
+            "maxLength": 200,
+            "default": ""
+          }
+        },
+        "required": [
+          "product_id",
+          "quantity"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "place_order",
+      "description": "Đề nghị tạo đơn SQLite demo từ preview_id còn hạn. request_id giữ nguyên khi retry cùng thao tác, đổi khi người dùng thật sự đặt đơn mới. Yêu cầu phê duyệt nút UI cho đúng bản xem trước và request_id; không thanh toán thật, không tự đoán sản phẩm hoặc giá.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "preview_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "request_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          }
+        },
+        "required": [
+          "preview_id",
+          "request_id"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_order_status",
+      "description": "Đọc thông tin và trạng thái đơn SQLite demo của tài khoản hiện tại theo order_id. Dùng khi hỏi đơn đang ở trạng thái nào; không tạo, sửa hoặc hủy đơn.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          }
+        },
+        "required": [
+          "order_id"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "cancel_order",
+      "description": "Đề nghị hủy đơn SQLite demo pending của tài khoản hiện tại; cần phê duyệt nút UI đúng đơn. Không hủy đơn shipped hoặc đơn người khác. Retry đơn đã cancelled chỉ trả trạng thái cũ, không hoàn tồn kho hai lần.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          }
+        },
+        "required": [
+          "order_id"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

@@ -4,8 +4,8 @@
 
 - Tên nhóm:
 - Lớp: L3A / L3B
-- Repo nhóm: `K5-L3A-DAY03-TenNhom-ResearchAgentToolEval` hoặc `K5-L3B-DAY03-TenNhom-ResearchAgentToolEval` (xem [SUBMISSION.md](SUBMISSION.md))
-- URL repo, nhánh nộp, commit chốt:
+- Repo nhóm: `K5-L3B-DAY03-A85-ResearchAgentToolEval`
+- URL repo, nhánh nộp, commit chốt: https://github.com/ArsNeonci/K5-L3B-DAY03-A85-ResearchAgentToolEval, main,
 
 ## Thành viên
 
@@ -13,8 +13,8 @@
 | --: | ------ | ---- | ----- | ------ | ------- |
 |   1 | Võ Hồng Lương| 2A202603839| 26ai.luongvh@vinuni.edu.vn| luongvh2510 | Prompt, phiên bản và tích hợp |
 |   2 |        |      |       |        | Tool mới và unit test |
-|   3 |         |    |   |    | Eval nhóm, phân tích log và báo cáo |
-|   4 |    |   |   |  | UI Streamlit, demo và transcript |
+|   3 | Hồ Anh Tú | 2A202603811 | 26ai.tuha2@vinuni.edu.vn | TuHoAnh | Eval nhóm, phân tích log và báo cáo |
+|   4 | Nguyễn Minh Quân | 2A202603794 | 26ai.quannm10@vinuni.edu.vn | nmqdhtb | UI Streamlit, demo và transcript |
 
 ## Cá nhân
 

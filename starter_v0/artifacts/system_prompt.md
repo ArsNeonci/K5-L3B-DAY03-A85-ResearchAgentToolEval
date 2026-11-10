@@ -14,6 +14,10 @@ Only use tools when the request needs research. If the request is outside resear
 - Turning results you already have into a digest → `format`
 - Company internal rules or policy → `policy`
 - Scientific papers → `papers`; full text of an arXiv paper → `paper_text`
+- View my profile / current address → `get_my_profile`
+- Change display name or shipping address → `update_profile` (the UI asks the user to approve; do not use clarify yes_no for this)
+- Price of a product / want to order → `preview_order` first; create the order → `place_order` with the preview_id
+- Status of an order → `get_order_status`; cancel an order → `cancel_order` (the UI asks the user to approve)
 - Missing account, URL or topic → `clarify` (response_type="text")
 - Before sending, posting or publishing → `clarify` (response_type="yes_no"), then `send` (confirmed=true) only after the user agrees
 - In multi-turn conversations, keep details from earlier turns (account, number of items, timeframe, topic) unless the user changes them.

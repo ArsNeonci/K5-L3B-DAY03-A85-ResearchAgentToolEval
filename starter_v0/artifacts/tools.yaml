@@ -139,3 +139,83 @@ tools:
         max_pages: {type: integer, default: 5, description: "Pages to read, at least 1."}
         max_chars: {type: integer, default: 8000, description: "Max characters of text to return (1000-20000)."}
       required: [arxiv_url]
+
+  # ---------------- TV2 (Linh): SQLite demo profile/order tools ----------------
+  # Write actions (update_profile, place_order, cancel_order) never write on the model's call:
+  # they return needs_confirmation and the UI approval button completes them.
+  # place_order is registered via a wrapper that auto-generates request_id (docs/TV1_INTEGRATION_NOTES.md).
+  - name: get_my_profile
+    description: >
+      Read the display name and shipping address of the current demo account.
+      Use when the user asks to see their profile or current address.
+      Do NOT use to change the profile (use update_profile) or to read another account.
+    parameters:
+      type: object
+      properties: {}
+      required: []
+      additionalProperties: false
+
+  - name: update_profile
+    description: >
+      Request a change to display_name or shipping_address of the current demo account.
+      The tool does NOT write immediately: it returns needs_confirmation and the UI asks the user to approve.
+      If the new value is missing, ask with clarify first. Only these two fields are supported —
+      for email/password or other fields, tell the user it is not supported; do not call this tool.
+      Do NOT use to view the profile (use get_my_profile).
+    parameters:
+      type: object
+      properties:
+        field: {type: string, enum: [display_name, shipping_address], description: "Which field to change."}
+        new_value: {type: string, minLength: 1, maxLength: 200, description: "The exact new value the user gave. Never guess it."}
+      required: [field, new_value]
+      additionalProperties: false
+
+  - name: preview_order
+    description: >
+      Calculate and save a demo order preview (product, quantity, address, total in VND, demo_cod). Does NOT create an order.
+      Use when the user asks for a price or wants to order something — always preview before place_order.
+      Do NOT use to check an existing order (use get_order_status).
+    parameters:
+      type: object
+      properties:
+        product_id: {type: string, minLength: 1, maxLength: 80, description: "Product code exactly as the user gave it, e.g. 'DEMO-NOTEBOOK'. If missing, ask with clarify."}
+        quantity: {type: integer, minimum: 1, maximum: 10, description: "Number of items, integer 1-10."}
+        shipping_address: {type: string, maxLength: 200, default: "", description: "Leave empty to use the profile address; only set if the user gives a different address."}
+      required: [product_id, quantity]
+      additionalProperties: false
+
+  - name: place_order
+    description: >
+      Request to create a demo order from a valid preview_id returned by preview_order.
+      The tool does NOT write immediately: it returns needs_confirmation and the UI asks the user to approve.
+      Do NOT call without a preview_id from a previous preview_order result; never invent products or prices. No real payment.
+    parameters:
+      type: object
+      properties:
+        preview_id: {type: string, minLength: 1, maxLength: 80, description: "preview_id from the preview_order result."}
+      required: [preview_id]
+      additionalProperties: false
+
+  - name: get_order_status
+    description: >
+      Read the details and status of one demo order of the current account by order_id.
+      Use when the user asks about an order's status. Do NOT use to create, change or cancel orders.
+      If no order_id is given, ask with clarify.
+    parameters:
+      type: object
+      properties:
+        order_id: {type: string, minLength: 1, maxLength: 80, description: "Order id exactly as the user gave it, e.g. 'DEMO-...'."}
+      required: [order_id]
+      additionalProperties: false
+
+  - name: cancel_order
+    description: >
+      Request to cancel a pending demo order of the current account.
+      The tool does NOT cancel immediately: it returns needs_confirmation and the UI asks the user to approve.
+      Cannot cancel shipped orders or other users' orders. If no order_id is given, ask with clarify.
+    parameters:
+      type: object
+      properties:
+        order_id: {type: string, minLength: 1, maxLength: 80, description: "Order id to cancel, exactly as the user gave it."}
+      required: [order_id]
+      additionalProperties: false

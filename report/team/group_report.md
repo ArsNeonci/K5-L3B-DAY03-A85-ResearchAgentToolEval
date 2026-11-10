@@ -10,7 +10,7 @@
 
 - Tên nhóm:
 - Thành viên và phân công: xem [TEAM.md](../../TEAM.md)
-- Provider/model dùng cho v0–v3:
+- Provider/model dùng cho v0–v3: openai/gpt-4o-mini qua OpenRouter
 
 ## 2. Mục tiêu và cách tiếp cận — PHẦN A: Giới thiệu agent
 
@@ -62,10 +62,10 @@ Lấy từ `starter_v0/artifacts/version_log.csv` và `starter_v0/runs/*.json`. 
 
 | Version | Changed Artifact | Hypothesis | Metric Before | Metric After | Run File |
 |---|---|---|---:|---:|---|
-| v0 | baseline |  |  |  |  |
-| v1 |  |  |  |  |  |
-| v2 |  |  |  |  |  |
-| v3 |  |  |  |  |  |
+| v0 | baseline | Đo hành vi chưa tối ưu trước khi sửa | — | case 0.65 / routing 0.75 / args 0.65 / multiturn 1.0 | [v0_B_base_openrouter_20261110T181418169230.json](../../starter_v0/runs/v0_B_base_openrouter_20261110T181418169230.json) |
+| v1 | `system_prompt.md` | Bỏ chỉ dẫn xấu của starter (đoán thay vì hỏi, gửi không xác nhận, ép một bước) sẽ sửa các case missing_info / wrong_boundary / out_of_scope | case 0.65 / routing 0.75 / args 0.65 / multiturn 1.0 | case 0.85 / routing 0.9 / args 0.85 / multiturn 1.0 | [v1_B_base_openrouter_20261110T184716617005.json](../../starter_v0/runs/v1_B_base_openrouter_20261110T184716617005.json) |
+| v2 | `system_prompt.md` | Thêm rule routing đầy đủ (mỗi loại yêu cầu → tool tương ứng, gồm `clarify` text/yes_no trước `send`) sẽ sửa R10, R11, R12 mà không làm hỏng case đang PASS | case 0.85 / routing 0.9 / args 0.85 / multiturn 1.0 | case 0.95 / routing 1.0 / args 0.95 / multiturn 1.0 | [v2_B_base_openrouter_20261110T185648929400.json](../../starter_v0/runs/v2_B_base_openrouter_20261110T185648929400.json) |
+| v3 | `tools.yaml` | Viết lại description mọi tool (khi nào dùng/không dùng, convention args, `clarify` luôn yes_no cho yêu cầu gửi/đăng, `send` chỉ khi `confirmed=true`) sẽ sửa R12 và giữ nguyên các case đang PASS | case 0.95 / routing 1.0 / args 0.95 / multiturn 1.0 | case 0.95 / routing 1.0 / args 0.95 / multiturn 1.0 | [v3_B_base_openrouter_20261110T190619466814.json](../../starter_v0/runs/v3_B_base_openrouter_20261110T190619466814.json) |
 
 ### B2. Failure Analysis
 

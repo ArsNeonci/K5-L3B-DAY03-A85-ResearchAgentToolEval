@@ -8,7 +8,7 @@
 
 ## 1. Thông tin nhóm
 
-- Tên nhóm:
+- Tên nhóm: A85
 - Thành viên và phân công: xem [TEAM.md](../../TEAM.md)
 - Provider/model dùng cho v0–v3: openai/gpt-4o-mini qua OpenRouter
 
@@ -160,10 +160,36 @@ Chi tiết đóng góp của từng thành viên nằm trong [TEAM.md](../../TEA
 
 ## 7. Hạn chế và hướng cải thiện — B6. Reflection
 
-- Fix nào thuộc `system_prompt.md`?
-- Fix nào thuộc `tools.yaml`?
-- Failure nào cần review thủ công thay vì chấm tự động?
-- Nếu có thêm một vòng, nhóm sẽ thử giả thuyết nào?
+Số liệu dưới đây lấy từ run v0–v3 trong bảng B1 (`openai/gpt-4o-mini`, base suite 20 case).
+
+**Fix nào thuộc `system_prompt.md`?**
+
+Các fix về *hành vi* (có nên hành động không, hỏi lại hay đoán, xác nhận hay làm luôn) và *dùng tool nào để hỏi lại* thuộc system prompt:
+
+- v1 bỏ 3 chỉ dẫn xấu của starter → `case_accuracy` 0.65 → 0.85: R08, R14 (ngoài phạm vi) không còn gọi `send`. R03, R13 cũng PASS dù v1 không sửa `lookup`; có thể do bỏ câu "fill in its arguments using your best judgment", nhưng nhóm chưa chứng minh được nguyên nhân.
+- v1 chưa đủ cho R10, R11: eval đặt `tool_choice="required"` (`starter_v0/run_eval.py:293`) nên model không thể hỏi lại bằng text; prompt chỉ nói "ask the user" mà không nói tool nào → model chọn `timeline`/`fetch` rồi bịa args. v2 thêm rule routing chỉ rõ `clarify(response_type="text")` → 0.95, sửa R10, R11.
+- Bài học: rule trong system prompt có ưu tiên cao hơn description. Ở R12, rule "thiếu thông tin → `clarify(text)`" trong prompt thắng dòng "ALWAYS `yes_no` cho yêu cầu gửi/đăng" trong description của v3.
+
+**Fix nào thuộc `tools.yaml`?**
+
+Các fix về *convention args* và *phạm vi của từng tool* thuộc tool declaration:
+
+- v3 viết lại description cả 10 tool: khi nào dùng / không dùng, handle không có `@`, `topic=news`, `timeframe`, `search_type=Top|Latest`, `query` chỉ chứa chủ đề, `send` chỉ khi `confirmed=true`. Trên base suite metric không đổi (0.95 → 0.95) vì args đã đúng từ v1–v2; giá trị của v3 là làm rõ hợp đồng của tool, nhưng bộ base không đủ để đo điều đó.
+- Khi tích hợp tool TV2, nhóm bỏ `request_id` khỏi schema `place_order` và để registry tự sinh: đây cũng là fix thuộc tool declaration — không khai báo cho model một tham số mà model không có nguồn để biết, nếu không model buộc phải bịa.
+
+**Failure nào cần review thủ công thay vì chấm tự động?**
+
+- **R12_confirm_before_send** (FAIL ở v1–v3): model gọi `clarify(text)` hỏi nội dung bản tin thay vì `clarify(yes_no)`. Với yêu cầu "Đăng bản tin **này**" không kèm nội dung, hỏi nội dung là hợp lý, và boundary vẫn giữ: từ v1 đến v3 model không gọi `send` lần nào (v0 gọi 3 lần không xác nhận). Chấm tự động chỉ so `response_type` nên tính là FAIL.
+- **Case ngoài phạm vi (R08, R14)** kỳ vọng `behavior: refuse`, nhưng eval chỉ kiểm tra *không gọi tool*; nội dung từ chối/trả lời bằng text không được chấm.
+- **Chất lượng câu hỏi `clarify`** và **kết quả thật của tool** không được chấm: run v0 lần đầu thiếu key tool (mọi tool trả `Missing ..._API_KEY`) nhưng metric giống hệt lần chạy lại có key, vì eval chỉ chấm tool call của model.
+- **Dao động giữa các lần chạy:** mỗi version chỉ chạy một lần, nên một case đổi PASS/FAIL có thể do model không ổn định chứ không do thay đổi artifact.
+
+**Nếu có thêm một vòng, nhóm sẽ thử giả thuyết nào?**
+
+1. **Thứ tự ưu tiên rule cho R12:** sửa một câu trong `system_prompt.md` — "yêu cầu gửi/đăng/publish luôn dùng `clarify(response_type="yes_no")` trước, kể cả khi nội dung chưa rõ". Giả thuyết: nguyên nhân là xung đột giữa hai rule trong prompt, không phải description.
+2. **Đo dao động:** chạy lại mỗi version 2–3 lần với cùng artifact để biết case nào PASS/FAIL ổn định trước khi kết luận một fix có tác dụng.
+3. **Tránh học thuộc eval:** bỏ ví dụ handle trùng với eval base (`sama`, `elonmusk`, `karpathy`) khỏi description `timeline`, chỉ giữ quy tắc chung, rồi đo lại xem routing có giữ được không.
+4. **Đo tác dụng của v3 ngoài bộ base:** chạy `--suite group` và `--suite extension` để so v2 và v3 trên những case bộ base chưa phủ.
 
 ## 8. Tài liệu tham khảo
 

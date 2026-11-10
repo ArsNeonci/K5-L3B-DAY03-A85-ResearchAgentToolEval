@@ -11,8 +11,10 @@
 
 | STT | Họ tên | MSSV | Email | GitHub | Vai trò |
 | --: | ------ | ---- | ----- | ------ | ------- |
-|   1 |        |      |       |        |         |
-|   2 |        |      |       |        |         |
+|   1 | Võ Hồng Lương| 2A202603839| 26ai.luongvh@vinuni.edu.vn| luongvh2510 | Prompt, phiên bản và tích hợp |
+|   2 |        |      |       |        | Tool mới và unit test |
+|   3 |         |    |   |    | Eval nhóm, phân tích log và báo cáo |
+|   4 |    |   |   |  | UI Streamlit, demo và transcript |
 
 ## Cá nhân
 

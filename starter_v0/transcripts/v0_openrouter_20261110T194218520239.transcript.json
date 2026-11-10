@@ -1,0 +1,128 @@
+{
+  "transcript_id": "v0_openrouter_20261110T194218520239",
+  "version": "v0",
+  "artifact_version": "v0+pf0c107a9d7a1+t41a2894f8ad1",
+  "prompt_hash": "f0c107a9d7a14032c948d642d7c36f2a85cb6d69a099530093a874c94d472446",
+  "tools_hash": "41a2894f8ad1b5f1af946a1ebd34dc809faa05f187393d1fb770540a67c9074a",
+  "provider": "openrouter",
+  "model": "openai/gpt-4o-mini",
+  "system_prompt": "artifacts/system_prompt.md",
+  "tools": "artifacts/tools.yaml",
+  "history_window": 5,
+  "max_tool_rounds": 4,
+  "created_at": "2026-11-10T19:42:18",
+  "updated_at": "2026-11-10T19:42:26",
+  "turns": [
+    {
+      "turn_index": 1,
+      "started_at": "2026-11-10T19:42:18",
+      "user": "Cho mình xem bài mới nhất trên X.",
+      "status": "answered",
+      "assistant_text": "I'm unable to retrieve the latest tweets from X (formerly Twitter) due to a technical issue. Please check back later or try accessing the platform directly for the most recent updates.",
+      "rounds": [
+        {
+          "round": 1,
+          "assistant_text": null,
+          "tool_calls": [
+            {
+              "name": "timeline",
+              "args": {
+                "screenname": "sama"
+              }
+            }
+          ],
+          "tool_results": [
+            {
+              "tool": "timeline",
+              "args": {
+                "screenname": "sama"
+              },
+              "result": {
+                "tool": "get_user_tweets",
+                "error": "RuntimeError",
+                "message": "Missing RAPIDAPI_KEY env var"
+              }
+            }
+          ]
+        },
+        {
+          "round": 2,
+          "assistant_text": "I'm unable to retrieve the latest tweets from X (formerly Twitter) due to a technical issue. Please check back later or try accessing the platform directly for the most recent updates.",
+          "tool_calls": [],
+          "tool_results": []
+        }
+      ],
+      "tool_events": [
+        {
+          "tool": "timeline",
+          "args": {
+            "screenname": "sama"
+          },
+          "result": {
+            "tool": "get_user_tweets",
+            "error": "RuntimeError",
+            "message": "Missing RAPIDAPI_KEY env var"
+          }
+        }
+      ],
+      "ended_at": "2026-11-10T19:42:22"
+    },
+    {
+      "turn_index": 2,
+      "started_at": "2026-11-10T19:42:22",
+      "user": "Tài khoản @OpenAI, lấy 2 bài.",
+      "status": "answered",
+      "assistant_text": "I'm currently unable to retrieve the latest tweets from the @OpenAI account due to a technical issue. Please check back later or visit the account directly for the most recent updates.",
+      "rounds": [
+        {
+          "round": 1,
+          "assistant_text": null,
+          "tool_calls": [
+            {
+              "name": "timeline",
+              "args": {
+                "screenname": "OpenAI",
+                "limit": 2
+              }
+            }
+          ],
+          "tool_results": [
+            {
+              "tool": "timeline",
+              "args": {
+                "screenname": "OpenAI",
+                "limit": 2
+              },
+              "result": {
+                "tool": "get_user_tweets",
+                "error": "RuntimeError",
+                "message": "Missing RAPIDAPI_KEY env var"
+              }
+            }
+          ]
+        },
+        {
+          "round": 2,
+          "assistant_text": "I'm currently unable to retrieve the latest tweets from the @OpenAI account due to a technical issue. Please check back later or visit the account directly for the most recent updates.",
+          "tool_calls": [],
+          "tool_results": []
+        }
+      ],
+      "tool_events": [
+        {
+          "tool": "timeline",
+          "args": {
+            "screenname": "OpenAI",
+            "limit": 2
+          },
+          "result": {
+            "tool": "get_user_tweets",
+            "error": "RuntimeError",
+            "message": "Missing RAPIDAPI_KEY env var"
+          }
+        }
+      ],
+      "ended_at": "2026-11-10T19:42:26"
+    }
+  ]
+}

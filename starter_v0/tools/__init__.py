@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import secrets
 from pathlib import Path
 from typing import Any
 
@@ -17,6 +18,23 @@ from .policy.tool import search_company_policy
 from .social_search.tool import search_tweets
 from .send.tool import send_telegram
 from .lookup.tool import web_search
+# TV2 (Linh): SQLite demo profile/order tools. See docs/TV1_INTEGRATION_NOTES.md.
+from .get_my_profile.tool import getMyProfile
+from .update_profile.tool import updateProfile
+from .preview_order.tool import previewOrder
+from .place_order.tool import placeOrder
+from .get_order_status.tool import getOrderStatus
+from .cancel_order.tool import cancelOrder
+
+
+def place_order_auto_request_id(preview_id: str = "", **extra) -> dict:
+    """Model-facing wrapper for place_order: the model only sends preview_id.
+
+    A new request_id is generated for every call, so the model never has to invent one.
+    The UI must NOT use this wrapper when the user approves: it calls placeOrder directly
+    with the request_id from pending_action.payload (see docs/TV1_INTEGRATION_NOTES.md).
+    """
+    return placeOrder(preview_id=preview_id, request_id="REQ-" + secrets.token_hex(8), **extra)
 
 
 # NOTE (starter_v0): tool names here are intentionally vague. These keys are the
@@ -35,8 +53,13 @@ TOOL_FUNCTIONS = {
     "policy": search_company_policy,
     "papers": arxiv_search,
     "paper_text": get_arxiv_paper_text,
-    # TODO CP3 (student): register your new tool here, e.g. "my_tool": my_tool_function,
-    # then declare it in artifacts/tools.yaml and run `pytest tests/test_tool_contract.py`.
+    # TV2 (Linh): SQLite demo profile/order tools
+    "get_my_profile": getMyProfile,
+    "update_profile": updateProfile,
+    "preview_order": previewOrder,
+    "place_order": place_order_auto_request_id,  # wrapper: auto request_id
+    "get_order_status": getOrderStatus,
+    "cancel_order": cancelOrder,
 }
 
 
